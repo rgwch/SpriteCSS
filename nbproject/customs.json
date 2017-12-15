@@ -7,6 +7,9 @@
         "aurelia-app": {
             "context": "body"
         },
-        "click.delegate": {}
+        "click.delegate": {},
+        "files.bind": {},
+        "value.bind": {},
+        "if.bind": {}
     }
 }

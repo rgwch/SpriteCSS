@@ -2,10 +2,10 @@ import {Router, RouterConfiguration, NavigationInstruction, Next, PipelineStep, 
 import "packer.growing";
 
 export class App {
-    configureRouter(config: RouterConfiguration, router: Router) {
+    configureRouter(config: RouterConfiguration) {
         config.title = 'SpriteCSS';
         config.map([
-            {route: "", moduleId: "spritecss", name: "spritecss"}
+            {route: "", moduleId: "sprites", name: "sprites"}
         ]);
     }
 }
