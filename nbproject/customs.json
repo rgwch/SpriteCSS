@@ -1,0 +1,12 @@
+{
+    "elements": {
+        "router-view": {},
+        "require": {}
+    },
+    "attributes": {
+        "aurelia-app": {
+            "context": "body"
+        },
+        "click.delegate": {}
+    }
+}
