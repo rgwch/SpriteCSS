@@ -18,12 +18,12 @@
             <button type="button" class="btn btn-default" click.delegate="generar()">Generar</button>
         </form>
     </div>
-    <div class="container" id="divGenerado" style="padding-top: 25px;" show.bind="generado">
+    <div class="container" id="divGenerado" style="padding-top: 25px;" show.bind="cssGenerado">
         <h2>Resultado</h2>
         <div class="form-group">
             <label for="textareaCss">CSS Generado</label>
             <div class="input-group">
-                <input type="text" class="form-control" id="textareaCss" placeholder="CSS generado...">
+                <textarea type="text" class="form-control" id="textareaCss" placeholder="CSS generado..." value.bind="cssGenerado" rows="2" style="resize: none;"></textarea>
                 <span class="input-group-btn">
                     <button class="btn btn-default" type="button" data-copiar="#textareaCss">
                         <span class="glyphicon glyphicon-copy"></span>
@@ -44,10 +44,11 @@
         </div>
         <div class="">
             <label>Ejemplo de uso</label>
-            <pre id="areaEjemplo"></pre>
+            <pre id="areaEjemplo" innerhtml.bind="ejemplo">
+            </pre>
         </div>
         <div class="row" style="padding: 5%">
-            <canvas id="canvasDemo" class="img-responsive" style="background-color: transparent;" width="0" height="0"></canvas>
+            <canvas id="canvasDemo" class="img-responsive center-block" style="background-color: transparent;" width="0" height="0"></canvas>
         </div>
     </div>
 </template>

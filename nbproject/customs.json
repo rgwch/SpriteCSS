@@ -11,6 +11,7 @@
         "files.bind": {},
         "value.bind": {},
         "if.bind": {},
-        "show.bind": {}
+        "show.bind": {},
+        "innerhtml.bind": {}
     }
 }
