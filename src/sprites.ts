@@ -10,10 +10,14 @@ export class Sprites {
     private archivos: FileList;
     private generado = false;
     private taskqeue: TaskQueue;
+    private canvas: HTMLCanvasElement;
     constructor(taskqeue: TaskQueue) {
         this.taskqeue = taskqeue;
         this.claseBase = "sprite";
         this.prefijo = "sprite-";
+    }
+    attached(): void {
+        this.canvas = <HTMLCanvasElement> document.getElementById("canvasDemo");
     }
     generar(): void {
         if (this.archivos === undefined || this.archivos.length <= 0) {
@@ -24,15 +28,13 @@ export class Sprites {
             var packer = new GrowingPacker();
             packer.fit(imagenes);
 
-            var canvas = <HTMLCanvasElement> document.getElementById("atlas");
-            canvas.width = packer.root.w;
-            canvas.height = packer.root.h;
-            this.dibujarImagenes(canvas, imagenes);
+            this.canvas.width = packer.root.w;
+            this.canvas.height = packer.root.h;
+            this.dibujarImagenes(imagenes);
             this.generado = true;
             this.taskqeue.queueMicroTask(() => {
                 document.getElementById("divGenerado").scrollIntoView({behavior: "smooth", block: "start"});
             });
-            canvas.scrollIntoView({behavior: "smooth", block: "center"});
         })
     }
     private cargarImagenes(archivos: FileList): Promise<HTMLImageElement[]> {
@@ -62,9 +64,9 @@ export class Sprites {
             reader.readAsDataURL(archivo);
         });
     }
-    private dibujarImagenes(canvas: HTMLCanvasElement, imagenes) {
+    private dibujarImagenes(imagenes) {
         //dibujar rectangulos
-        var ctx = canvas.getContext("2d");
+        var ctx = this.canvas.getContext("2d");
         for (var i = 0; i < imagenes.length; i++) {
             var imagen = imagenes[i];
             if (imagen.fit) {
@@ -81,7 +83,6 @@ export class Sprites {
                 ctx.strokeRect(imagen.fit.x, imagen.fit.y, imagen.width, imagen.height);
             }
         }
-        //dibujar imagen
         for (var i = 0; i < imagenes.length; i++) {
             var imagen = imagenes[i];
             if (imagen.fit) {
