@@ -1,30 +1,48 @@
+import "packer.growing";
+
+declare var GrowingPacker;
 export class Sprites {
     private claseBase: string;
     private prefijo: string;
-    private imagenes: FileList;
+    private archivos: FileList;
+    private generado = false;
     constructor() {
         this.claseBase = "sprite";
         this.prefijo = "sprite-";
+        this.generado = true;
     }
     generar(): void {
-        if (this.imagenes === undefined || this.imagenes.length <= 0) {
+        if (this.archivos === undefined || this.archivos.length <= 0) {
             console.log("Imagenes requeridas");
             return;
         }
-        for (var i = 0; i < this.imagenes.length; i++) {
-            this.cargar(this.imagenes.item(i)).then(console.log);
-        }
+        this.cargarImagenes(this.archivos).then(imagenes => {
+            var packer = new GrowingPacker();
+            packer.fit(imagenes);
+
+            var canvas = <HTMLCanvasElement> document.getElementById("atlas");
+            canvas.width = packer.root.w;
+            canvas.height = packer.root.h;
+            this.dibujarImagenes(canvas, imagenes);
+        })
     }
-    private cargar(archivo: File): Promise<any> {
+    private cargarImagenes(archivos: FileList): Promise<HTMLImageElement[]> {
+        var promesas = [];
+        for (var i = 0; i < archivos.length; i++) {
+            promesas.push(this.cargarImagen(archivos.item(i)));
+        }
+        return Promise.all(promesas);
+    }
+    private cargarImagen(archivo: File): Promise<HTMLImageElement> {
         return new Promise(function (resolve, reject) {
             var imagen = new Image();
             var reader = new FileReader();
             reader.onload = () => {
                 imagen.src = reader.result;
-                resolve(imagen);
             }
             imagen.onload = () => {
                 imagen.name = archivo.name.split(".")[0]; //TODO: reemplazar espacios y caracteres especiales
+                resolve(imagen);
             }
             imagen.onerror = error => {
                 reject("Problema al crear imagen " + archivo.name + "\n. Error es: " + JSON.stringify(error));
@@ -34,5 +52,50 @@ export class Sprites {
             };
             reader.readAsDataURL(archivo);
         });
+    }
+    private dibujarImagenes(canvas: HTMLCanvasElement, imagenes) {
+        for (var i = 0; i < imagenes.length; i++) {
+            var imagen = imagenes[i];
+            if (imagen.fit) {
+                console.log(i + ":" + (imagen.width + imagen.height) + ":" + imagen.name + " - [" + imagen.fit.x + "," + imagen.fit.y + "], " + imagen.width + "X" + imagen.height);
+            }
+        }
+
+        var ctx = canvas.getContext("2d");
+        for (var i = 0; i < imagenes.length; i++) {
+            var imagen = imagenes[i];
+            if (imagen.fit) {
+                ctx.fillStyle = this.color();
+                ctx.fillRect(imagen.fit.x, imagen.fit.y, imagen.fit.x + imagen.width, imagen.fit.y + imagen.height);
+            }
+        }
+        ctx.fillStyle = "rgb(255,255,255,1)";
+        for (var i = 0; i < imagenes.length; i++) {
+            var imagen = imagenes[i];
+            if (imagen.fit) {
+                ctx.fillStyle = this.color();
+                ctx.strokeRect(imagen.fit.x, imagen.fit.y, imagen.fit.x + imagen.width, imagen.fit.y + imagen.height);
+            }
+        }
+        for (var i = 0; i < imagenes.length; i++) {
+            var imagen = imagenes[i];
+            if (imagen.fit) {
+                ctx.drawImage(imagen, imagen.fit.x, imagen.fit.y);
+            }
+        }
+        ctx.font = "24px Georgia";
+        ctx.textBaseline = "top";
+        for (var i = 0; i < imagenes.length; i++) {
+            var imagen = imagenes[i];
+            if (imagen.fit) {
+                ctx.fillText(i + "", imagen.fit.x, imagen.fit.y);
+            }
+        }
+    }
+    private color(): string {
+        var r = Math.floor(Math.random() * 255) + 1;
+        var g = Math.floor(Math.random() * 255) + 1;
+        var b = Math.floor(Math.random() * 255) + 1;
+        return "rgb(" + r + "," + g + "," + b + "," + ".5)";
     }
 }

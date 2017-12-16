@@ -62,13 +62,20 @@ GrowingPacker = function () { };
 GrowingPacker.prototype = {
 
     fit: function (blocks) {
-        var n, node, block, len = blocks.length;
+        for (var i = 0; i < blocks.length; i++) {
+            blocks[i].w = blocks[i].width;
+            blocks[i].h = blocks[i].height;
+        }
+        blocks.sort(function (a, b) {
+            return b.w + b.h > a.w + a.h;
+        });
+        var len = blocks.length;
         var w = len > 0 ? blocks[0].w : 0;
         var h = len > 0 ? blocks[0].h : 0;
         this.root = {x: 0, y: 0, w: w, h: h};
-        for (n = 0; n < len; n++) {
-            block = blocks[n];
-            node = this.findNode(this.root, block.w, block.h);
+        for (var i = 0; i < blocks.length; i++) {
+            var block = blocks[i];
+            var node = this.findNode(this.root, block.w, block.h);
             if (node)
                 block.fit = this.splitNode(node, block.w, block.h);
             else

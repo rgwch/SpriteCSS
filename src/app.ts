@@ -1,4 +1,4 @@
-import {Router, RouterConfiguration, NavigationInstruction, Next, PipelineStep, Redirect} from 'aurelia-router';
+import {RouterConfiguration} from 'aurelia-router';
 import "packer.growing";
 
 export class App {

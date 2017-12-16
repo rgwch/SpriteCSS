@@ -10,6 +10,7 @@
         "click.delegate": {},
         "files.bind": {},
         "value.bind": {},
-        "if.bind": {}
+        "if.bind": {},
+        "show.bind": {}
     }
 }
