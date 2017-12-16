@@ -1,15 +1,19 @@
+import {autoinject, TaskQueue} from 'aurelia-framework';
 import "packer.growing";
 
 declare var GrowingPacker;
+
+@autoinject
 export class Sprites {
     private claseBase: string;
     private prefijo: string;
     private archivos: FileList;
     private generado = false;
-    constructor() {
+    private taskqeue: TaskQueue;
+    constructor(taskqeue: TaskQueue) {
+        this.taskqeue = taskqeue;
         this.claseBase = "sprite";
         this.prefijo = "sprite-";
-        this.generado = true;
     }
     generar(): void {
         if (this.archivos === undefined || this.archivos.length <= 0) {
@@ -24,6 +28,11 @@ export class Sprites {
             canvas.width = packer.root.w;
             canvas.height = packer.root.h;
             this.dibujarImagenes(canvas, imagenes);
+            this.generado = true;
+            this.taskqeue.queueMicroTask(() => {
+                document.getElementById("divGenerado").scrollIntoView({behavior: "smooth", block: "start"});
+            });
+            canvas.scrollIntoView({behavior: "smooth", block: "center"});
         })
     }
     private cargarImagenes(archivos: FileList): Promise<HTMLImageElement[]> {
