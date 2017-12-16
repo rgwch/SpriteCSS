@@ -54,41 +54,38 @@ export class Sprites {
         });
     }
     private dibujarImagenes(canvas: HTMLCanvasElement, imagenes) {
-        for (var i = 0; i < imagenes.length; i++) {
-            var imagen = imagenes[i];
-            if (imagen.fit) {
-                console.log(i + ":" + (imagen.width + imagen.height) + ":" + imagen.name + " - [" + imagen.fit.x + "," + imagen.fit.y + "], " + imagen.width + "X" + imagen.height);
-            }
-        }
-
+        //dibujar rectangulos
         var ctx = canvas.getContext("2d");
         for (var i = 0; i < imagenes.length; i++) {
             var imagen = imagenes[i];
             if (imagen.fit) {
                 ctx.fillStyle = this.color();
-                ctx.fillRect(imagen.fit.x, imagen.fit.y, imagen.fit.x + imagen.width, imagen.fit.y + imagen.height);
+                ctx.fillRect(imagen.fit.x, imagen.fit.y, imagen.width, imagen.height);
             }
         }
+        //dibujar contorno
         ctx.fillStyle = "rgb(255,255,255,1)";
+        ctx.strokeRect(0, 0, ctx.canvas.width, ctx.canvas.height);
         for (var i = 0; i < imagenes.length; i++) {
             var imagen = imagenes[i];
             if (imagen.fit) {
-                ctx.fillStyle = this.color();
-                ctx.strokeRect(imagen.fit.x, imagen.fit.y, imagen.fit.x + imagen.width, imagen.fit.y + imagen.height);
+                ctx.strokeRect(imagen.fit.x, imagen.fit.y, imagen.width, imagen.height);
             }
         }
+        //dibujar imagen
         for (var i = 0; i < imagenes.length; i++) {
             var imagen = imagenes[i];
             if (imagen.fit) {
                 ctx.drawImage(imagen, imagen.fit.x, imagen.fit.y);
             }
         }
+        //dibujar numeracion
         ctx.font = "24px Georgia";
         ctx.textBaseline = "top";
         for (var i = 0; i < imagenes.length; i++) {
             var imagen = imagenes[i];
             if (imagen.fit) {
-                ctx.fillText(i + "", imagen.fit.x, imagen.fit.y);
+                ctx.fillText((i + 1) + "", imagen.fit.x, imagen.fit.y);
             }
         }
     }
