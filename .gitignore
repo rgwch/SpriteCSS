@@ -26,5 +26,3 @@ node_modules
 # Compiled files
 scripts
 nbproject/private/private.xml
-/bootstrap/
-!/scripts/
