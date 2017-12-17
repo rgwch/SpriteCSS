@@ -47,7 +47,14 @@
             <pre id="areaEjemplo" innerhtml.bind="ejemplo">
             </pre>
         </div>
-        <div class="row" style="padding: 5%" id="dibujo">
+        <div class="row">
+            <div class="col-xs-12 form-group">
+                <label class="btn btn-default pull-right" download="png.png" click.delegate="descargar()">
+                    Descargar spritesheet&nbsp;<span class="glyphicon glyphicon-download-alt"></span>
+                </label>
+            </div>
+            <div class="col-xs-12" id="dibujo">
+            </div>
         </div>
     </div>
 </template>

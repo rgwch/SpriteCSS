@@ -19,6 +19,7 @@ export class Sprites {
         this.taskqeue = taskqeue;
         this.claseBase = "sprite";
         this.prefijo = "sprite-";
+        this.cssGenerado = "algo";
     }
     generar(): void {
         if (this.archivos === undefined || this.archivos.length <= 0) {
@@ -159,6 +160,6 @@ export class Sprites {
                 ctx.drawImage(imagen, imagen.fit.x, imagen.fit.y);
             }
         }
-        var url = canvas.toDataURL("image/png");
+        window.open(canvas.toDataURL("image/png"));
     }
 }
