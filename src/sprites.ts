@@ -19,9 +19,25 @@ export class Sprites {
         this.taskqeue = taskqeue;
         this.claseBase = "sprite";
         this.prefijo = "sprite-";
-        this.cssGenerado = "algo";
     }
-    generar(): void {
+    descargar() {
+        if (this.packer == null || this.imagenes === null) {
+            console.log("Packer no generado o sin imagenes");
+            return;
+        }
+        var canvas = document.createElement("canvas");
+        canvas.width = this.packer.root.w;
+        canvas.height = this.packer.root.h;
+        var ctx = canvas.getContext("2d");
+        for (var i = 0; i < this.imagenes.length; i++) {
+            var imagen = this.imagenes[i];
+            if (imagen.fit) {
+                ctx.drawImage(imagen, imagen.fit.x, imagen.fit.y);
+            }
+        }
+        window.open(canvas.toDataURL("image/png"));
+    }
+    procesar(): void {
         if (this.archivos === undefined || this.archivos.length <= 0) {
             console.log("Imagenes requeridas");
             return;
@@ -144,22 +160,5 @@ export class Sprites {
                 dibujo.plain((i + 1).toString()).move(imagen.fit.x, imagen.fit.y).font({size: 24, family: "Georgia"}).fill("#000000");
             }
         }
-    }
-    private descargar() {
-        if (this.packer == null || this.imagenes === null) {
-            console.log("Packer no generado o sin imagenes");
-            return;
-        }
-        var canvas = document.createElement("canvas");
-        canvas.width = this.packer.root.w;
-        canvas.height = this.packer.root.h;
-        var ctx = canvas.getContext("2d");
-        for (var i = 0; i < this.imagenes.length; i++) {
-            var imagen = this.imagenes[i];
-            if (imagen.fit) {
-                ctx.drawImage(imagen, imagen.fit.x, imagen.fit.y);
-            }
-        }
-        window.open(canvas.toDataURL("image/png"));
     }
 }
