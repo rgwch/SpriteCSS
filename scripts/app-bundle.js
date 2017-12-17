@@ -1,1 +1,438 @@
-define("app",["require","exports","packer.growing"],function(e,t){"use strict";Object.defineProperty(t,"__esModule",{value:!0});var o=function(){function e(){}return e.prototype.configureRouter=function(e){e.title="SpriteCSS",e.map([{route:"",moduleId:"sprites",name:"sprites"}])},e}();t.App=o}),define("environment",["require","exports"],function(e,t){"use strict";Object.defineProperty(t,"__esModule",{value:!0}),t.default={debug:!1,testing:!1}}),define("main",["require","exports","./environment"],function(e,t,o){"use strict";Object.defineProperty(t,"__esModule",{value:!0}),t.configure=function(e){e.use.standardConfiguration().feature("resources"),o.default.debug&&e.use.developmentLogging(),o.default.testing&&e.use.plugin("aurelia-testing"),e.start().then(function(){return e.setRoot()})}});var __decorate=this&&this.__decorate||function(e,t,o,r){var a,n=arguments.length,i=n<3?t:null===r?r=Object.getOwnPropertyDescriptor(t,o):r;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)i=Reflect.decorate(e,t,o,r);else for(var s=e.length-1;s>=0;s--)(a=e[s])&&(i=(n<3?a(i):n>3?a(t,o,i):a(t,o))||i);return n>3&&i&&Object.defineProperty(t,o,i),i},__metadata=this&&this.__metadata||function(e,t){if("object"==typeof Reflect&&"function"==typeof Reflect.metadata)return Reflect.metadata(e,t)};define("sprites",["require","exports","aurelia-framework","svg.js","packer.growing"],function(e,t,o,r){"use strict";Object.defineProperty(t,"__esModule",{value:!0});var a=function(){function e(e){this.taskqeue=e,this.claseBase="sprite",this.prefijo="sprite-"}return e.prototype.descargar=function(){if(null!=this.packer&&null!==this.imagenes){var e=document.createElement("canvas");e.width=this.packer.root.w,e.height=this.packer.root.h;for(var t=e.getContext("2d"),o=0;o<this.imagenes.length;o++){var r=this.imagenes[o];r.fit&&t.drawImage(r,r.fit.x,r.fit.y)}window.open(e.toDataURL("image/png"))}else console.log("Packer no generado o sin imagenes")},e.prototype.procesar=function(){var e=this;void 0===this.archivos||this.archivos.length<=0?console.log("Imagenes requeridas"):this.cargarImagenes(this.archivos).then(function(t){e.imagenes=t,e.packer=new GrowingPacker,e.packer.fit(t),e.dibujarImagenes(),e.cssGenerado=e.generarCss(t),e.ejemplo="&lt;span class=&quot;"+e.claseBase+" "+e.prefijo+t[0].name+"&quot;&gt;&lt;&#x2F;span&gt;",e.taskqeue.queueMicroTask(function(){document.getElementById("divGenerado").scrollIntoView({behavior:"smooth",block:"start"})})})},e.prototype.generarCss=function(e){var t=this;e.sort(function(e,t){var o=e.name.toLowerCase(),r=t.name.toLowerCase();return o>r?1:o<r?-1:0});var o=this.packer.root.w,r=this.packer.root.h,a="",n=".".concat(this.claseBase," { width: 100%; height: auto; display: inline-block; background-size: 0%; background-image: url('png.png');}\n");return a+=n,e.forEach(function(e){if(e.fit){var n=e.name,i=t.porcentage(e.fit.x,o,e.w),s=t.porcentage(e.fit.y,r,e.h),l=o/e.w*100,c=r/e.h*100,p=e.height/e.width*100,u=".".concat(t.claseBase,".",t.prefijo,n," { padding-top: ",p.toString(),"%; background-position: ",i.toString(),"% ",s.toString(),"%; background-size: ",l.toString(),"% ",c.toString(),"%;}\n");a+=u}}),a},e.prototype.porcentage=function(e,t,o){var r=t-o;return 0===r?0:e/r*100},e.prototype.cargarImagenes=function(e){for(var t=[],o=0;o<e.length;o++)t.push(this.cargarImagen(e.item(o)));return Promise.all(t)},e.prototype.cargarImagen=function(e){return new Promise(function(t,o){var r=new Image,a=new FileReader;a.onload=function(){r.src=a.result},r.onload=function(){r.name=e.name.split(".")[0],t(r)},r.onerror=function(t){o("Problema al crear imagen "+e.name+"\n. Error es: "+JSON.stringify(t))},a.onerror=function(t){o("Problema al leer archivo "+e.name+"\n. Error es: "+JSON.stringify(t))},a.readAsDataURL(e)})},e.prototype.colorAleatorio=function(e){var t="ff";e&&e<=1&&e>=0&&(t=Math.floor(256*e).toString(16)).length<2&&(t="00".substr(0,2-t.length)+t);var o=Math.floor(16777215*Math.random()).toString(16);return o.length<6&&(o="000000".substr(0,6-o.length)+o),"#".concat(o).concat(t)},e.prototype.dibujarImagenes=function(){if(void 0===this.archivos||this.archivos.length<=0)console.log("Imagenes requeridas");else{var e=document.getElementById("dibujo");e.innerText="";var t=r(e).size(this.packer.root.w,this.packer.root.h);t.viewbox(0,0,this.packer.root.w,this.packer.root.h),t.addClass("img-responsive"),t.addClass("center-block");for(var o=function(){this.fill({opacity:1})},a=function(){this.fill({opacity:.1})},n=0;n<this.imagenes.length;n++){var i=this.imagenes[n];if(i.fit){var s=t.rect(i.width,i.height).move(i.fit.x,i.fit.y).fill({color:this.colorAleatorio(),opacity:.1}).stroke("#000000");t.image(i.src).move(i.fit.x,i.fit.y).style("pointer-events","none"),s.on("mouseover",o),s.on("mouseout",a),t.plain((n+1).toString()).move(i.fit.x,i.fit.y).font({size:24,family:"Georgia"}).fill("#000000")}}}},e=__decorate([o.autoinject,__metadata("design:paramtypes",[o.TaskQueue])],e)}();t.Sprites=a}),define("resources/index",["require","exports"],function(e,t){"use strict";Object.defineProperty(t,"__esModule",{value:!0}),t.configure=function(e){}}),GrowingPacker=function(){},GrowingPacker.prototype={fit:function(e){for(var t=0;t<e.length;t++)e[t].w=e[t].width,e[t].h=e[t].height;e.sort(function(e,t){return t.w+t.h>e.w+e.h});var o=e.length,r=o>0?e[0].w:0,a=o>0?e[0].h:0;this.root={x:0,y:0,w:r,h:a};for(t=0;t<e.length;t++){var n=e[t],i=this.findNode(this.root,n.w,n.h);n.fit=i?this.splitNode(i,n.w,n.h):this.growNode(n.w,n.h)}},findNode:function(e,t,o){return e.used?this.findNode(e.right,t,o)||this.findNode(e.down,t,o):t<=e.w&&o<=e.h?e:null},splitNode:function(e,t,o){return e.used=!0,e.down={x:e.x,y:e.y+o,w:e.w,h:e.h-o},e.right={x:e.x+t,y:e.y,w:e.w-t,h:o},e},growNode:function(e,t){var o=e<=this.root.w,r=t<=this.root.h,a=r&&this.root.h>=this.root.w+e,n=o&&this.root.w>=this.root.h+t;return a?this.growRight(e,t):n?this.growDown(e,t):r?this.growRight(e,t):o?this.growDown(e,t):null},growRight:function(e,t){this.root={used:!0,x:0,y:0,w:this.root.w+e,h:this.root.h,down:this.root,right:{x:this.root.w,y:0,w:e,h:this.root.h}};var o=this.findNode(this.root,e,t);return o?this.splitNode(o,e,t):null},growDown:function(e,t){this.root={used:!0,x:0,y:0,w:this.root.w,h:this.root.h+t,down:{x:0,y:this.root.h,w:this.root.w,h:t},right:this.root};var o=this.findNode(this.root,e,t);return o?this.splitNode(o,e,t):null}},define("packer.growing",[],function(){}),define("text!app.html",["module"],function(e){e.exports='<template><require from=bootstrap/css/bootstrap.css></require><nav class="navbar navbar-inverse"><div class=container-fluid><div class=navbar-header><button type=button class="navbar-toggle collapsed" data-toggle=collapse data-target=#bs-example-navbar-collapse-2><span class=sr-only>Toggle navigation</span><span class=icon-bar></span><span class=icon-bar></span><span class=icon-bar></span></button><a class=navbar-brand href=#>SpriteCSS</a></div><div class="collapse navbar-collapse" id=bs-example-navbar-collapse-2><ul class="nav navbar-nav"></ul><ul class="nav navbar-nav navbar-right"></ul></div></div></nav><router-view></router-view></template>'}),define("text!sprites.html",["module"],function(e){e.exports='<template><div class=container><h1>CSS Sprite Responsive</h1><p>Genera reglas CSS para sprites auto ajustables, usando imágenes locales</p><form><div class=form-group><label for=inputClaseBase>Clase Base</label><input type=text class=form-control placeholder="Clase base para todos los elementos" value=sprite id=inputClaseBase value.bind=claseBase></div><div class=form-group><label for=inputPrefijo>Prefijo</label><input type=text class=form-control placeholder="Prefijo a cada elemento" value=sprite- id=inputPrefijo value.bind=prefijo></div><div class=form-group><label for=inputArchivos>Imagenes</label><input type=file multiple accept=image/* id=inputArchivos files.bind=archivos></div><button type=button class="btn btn-default" click.delegate=procesar()>Generar</button></form></div><div class=container id=divGenerado style=padding-top:25px show.bind=cssGenerado><h2>Resultado</h2><div class=form-group><label for=textareaCss>CSS Generado</label><div class=input-group><textarea type=text class=form-control id=textareaCss placeholder="CSS generado..." value.bind=cssGenerado rows=2 style=resize:none></textarea><span class=input-group-btn><button class="btn btn-default" type=button data-copiar=#textareaCss><span class="glyphicon glyphicon-copy"></span></button></span></div></div><div class=form-group><label>Spritesheet generado</label><div class=input-group><input type=text class=form-control id=inputDescripcionImagen placeholder="Información de spritesheet..."><span class=input-group-btn><a href=# class="btn btn-default" download=png.png data-descargar-canvas=atlas><span class="glyphicon glyphicon-download-alt"></span></a></span></div></div><div class=""><label>Ejemplo de uso</label><pre id=areaEjemplo innerhtml.bind=ejemplo>\r\n            </pre></div><div class=row><div class="col-xs-12 form-group"><label class="btn btn-default pull-right" download=png.png click.delegate=descargar()>Descargar spritesheet&nbsp;<span class="glyphicon glyphicon-download-alt"></span></label></div><div class=col-xs-12 id=dibujo></div></div></div></template>'});
+define('app',["require", "exports", "packer.growing"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var App = (function () {
+        function App() {
+        }
+        App.prototype.configureRouter = function (config) {
+            config.title = 'SpriteCSS';
+            config.map([
+                { route: "", moduleId: "sprites", name: "sprites" }
+            ]);
+        };
+        return App;
+    }());
+    exports.App = App;
+});
+
+
+
+define('environment',["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.default = {
+        debug: true,
+        testing: true
+    };
+});
+
+
+
+define('main',["require", "exports", "./environment"], function (require, exports, environment_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    function configure(aurelia) {
+        aurelia.use
+            .standardConfiguration()
+            .feature('resources');
+        if (environment_1.default.debug) {
+            aurelia.use.developmentLogging();
+        }
+        if (environment_1.default.testing) {
+            aurelia.use.plugin('aurelia-testing');
+        }
+        aurelia.start().then(function () { return aurelia.setRoot(); });
+    }
+    exports.configure = configure;
+});
+
+
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+define('sprites',["require", "exports", "aurelia-framework", "svg.js", "packer.growing"], function (require, exports, aurelia_framework_1, SVG) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var Sprites = (function () {
+        function Sprites(taskqeue) {
+            this.claseBase = "sprite";
+            this.prefijo = "sprite-";
+            this.ejemplo = "";
+            this.taskqeue = taskqeue;
+        }
+        Sprites.prototype.procesar = function () {
+            var _this = this;
+            if (this.archivos === undefined || this.archivos.length <= 0) {
+                console.log("Imagenes requeridas");
+                return;
+            }
+            this.cargarImagenes(this.archivos).then(function (imagenes) {
+                _this.imagenes = imagenes;
+                _this.packer = new GrowingPacker();
+                _this.packer.fit(imagenes);
+                _this.dibujarImagenes();
+                _this.cssGenerado = _this.generarCss(imagenes);
+                _this.ejemplo = "&lt;span class=&quot;" + _this.claseBase + " " + _this.prefijo + imagenes[0].name + "&quot;&gt;&lt;&#x2F;span&gt;";
+                _this.taskqeue.queueMicroTask(function () {
+                    document.getElementById("divGenerado").scrollIntoView({ behavior: "smooth", block: "start" });
+                });
+            });
+        };
+        Sprites.prototype.descargarSpriteSheet = function () {
+            if (this.packer == null || this.imagenes === null) {
+                console.log("Packer no generado o sin imagenes");
+                return;
+            }
+            var canvas = document.createElement("canvas");
+            canvas.width = this.packer.root.w;
+            canvas.height = this.packer.root.h;
+            var ctx = canvas.getContext("2d");
+            for (var i = 0; i < this.imagenes.length; i++) {
+                var imagen = this.imagenes[i];
+                if (imagen.fit) {
+                    ctx.drawImage(imagen, imagen.fit.x, imagen.fit.y);
+                }
+            }
+            window.open(canvas.toDataURL("image/png"));
+        };
+        Sprites.prototype.generarCss = function (imagenes) {
+            var _this = this;
+            imagenes.sort(function (a, b) {
+                var an = a.name.toLowerCase();
+                var bn = b.name.toLowerCase();
+                if (an > bn) {
+                    return 1;
+                }
+                else if (an < bn) {
+                    return -1;
+                }
+                else {
+                    return 0;
+                }
+            });
+            var width = this.packer.root.w, height = this.packer.root.h;
+            var css = "";
+            var reglaBase = ".".concat(this.claseBase, " { width: 100%; height: auto; display: inline-block; background-size: 0%; background-image: url('png.png');}\n");
+            css += reglaBase;
+            imagenes.forEach(function (imagen) {
+                if (imagen.fit) {
+                    var nombre = imagen.name;
+                    var posX = _this.porcentage(imagen.fit.x, width, imagen.w);
+                    var posY = _this.porcentage(imagen.fit.y, height, imagen.h);
+                    var sizeX = width / imagen.w * 100;
+                    var sizeY = height / imagen.h * 100;
+                    var aspectRatio = imagen.height / imagen.width * 100;
+                    var regla = ".".concat(_this.claseBase, ".", _this.prefijo, nombre, " { padding-top: ", aspectRatio.toString(), "%; background-position: ", posX.toString(), "% ", posY.toString(), "%; background-size: ", sizeX.toString(), "% ", sizeY.toString(), "%;}\n");
+                    css += regla;
+                }
+            });
+            return css;
+        };
+        Sprites.prototype.copiarTexto = function () {
+            if (this.cssGenerado === null) {
+                console.log("No hay texto generado");
+                return;
+            }
+            var t = document.createElement("textarea");
+            t.style.position = 'fixed';
+            t.style.top = "0";
+            t.style.left = "0";
+            t.style.width = '2em';
+            t.style.height = '2em';
+            t.style.padding = "0";
+            t.style.border = 'none';
+            t.style.outline = 'none';
+            t.style.boxShadow = 'none';
+            t.style.background = 'transparent';
+            t.value = this.cssGenerado;
+            document.body.appendChild(t);
+            t.select();
+            try {
+                document.execCommand(("Copy"));
+            }
+            catch (err) {
+                console.log("Copia no permitida");
+            }
+            document.body.removeChild(t);
+        };
+        Sprites.prototype.descargarTexto = function () {
+            if (this.cssGenerado === null) {
+                console.log("No hay texto generado");
+                return;
+            }
+            var a = document.createElement("a");
+            a.setAttribute("href", "data:text/plain;charset=utf-8," + encodeURIComponent(this.cssGenerado));
+            a.setAttribute("download", "sprites.css");
+            a.style.display = "none";
+            document.body.appendChild(a);
+            console.log(a);
+            a.click();
+            document.body.removeChild(a);
+        };
+        Sprites.prototype.porcentage = function (posicion, dimensionContenedor, dimensionImagen) {
+            var diferencia = dimensionContenedor - dimensionImagen;
+            if (diferencia === 0) {
+                return 0;
+            }
+            return posicion / diferencia * 100;
+        };
+        Sprites.prototype.cargarImagenes = function (archivos) {
+            var promesas = [];
+            for (var i = 0; i < archivos.length; i++) {
+                promesas.push(this.cargarImagen(archivos.item(i)));
+            }
+            return Promise.all(promesas);
+        };
+        Sprites.prototype.cargarImagen = function (archivo) {
+            return new Promise(function (resolve, reject) {
+                var imagen = new Image();
+                var reader = new FileReader();
+                reader.onload = function () {
+                    imagen.src = reader.result;
+                };
+                imagen.onload = function () {
+                    imagen.name = archivo.name.split(".")[0];
+                    resolve(imagen);
+                };
+                imagen.onerror = function (error) {
+                    reject("Problema al crear imagen " + archivo.name + "\n. Error es: " + JSON.stringify(error));
+                };
+                reader.onerror = function (error) {
+                    reject("Problema al leer archivo " + archivo.name + "\n. Error es: " + JSON.stringify(error));
+                };
+                reader.readAsDataURL(archivo);
+            });
+        };
+        Sprites.prototype.colorAleatorio = function (opacidad) {
+            var opacidadHex = "ff";
+            if (opacidad && opacidad <= 1 && opacidad >= 0) {
+                opacidadHex = Math.floor(opacidad * 256).toString(16);
+                if (opacidadHex.length < 2) {
+                    opacidadHex = "00".substr(0, 2 - opacidadHex.length) + opacidadHex;
+                }
+            }
+            var colorHex = Math.floor(Math.random() * 16777215).toString(16);
+            if (colorHex.length < 6) {
+                colorHex = "000000".substr(0, 6 - colorHex.length) + colorHex;
+            }
+            return "#".concat(colorHex).concat(opacidadHex);
+        };
+        Sprites.prototype.dibujarImagenes = function () {
+            if (this.archivos === undefined || this.archivos.length <= 0) {
+                console.log("Imagenes requeridas");
+                return;
+            }
+            var areaDibujo = document.getElementById("dibujo");
+            areaDibujo.innerText = "";
+            var dibujo = SVG(areaDibujo).size(this.packer.root.w, this.packer.root.h);
+            dibujo.viewbox(0, 0, this.packer.root.w, this.packer.root.h);
+            dibujo.addClass("img-responsive");
+            dibujo.addClass("center-block");
+            var mouseover = function () {
+                this.fill({ opacity: 1 });
+            };
+            var mouseout = function () {
+                this.fill({ opacity: .1 });
+            };
+            for (var i = 0; i < this.imagenes.length; i++) {
+                var imagen = this.imagenes[i];
+                if (imagen.fit) {
+                    var rec = dibujo.rect(imagen.width, imagen.height).move(imagen.fit.x, imagen.fit.y).fill({ color: this.colorAleatorio(), opacity: .1 }).stroke("#000000");
+                    dibujo.image(imagen.src).move(imagen.fit.x, imagen.fit.y).style("pointer-events", "none");
+                    rec.on("mouseover", mouseover);
+                    rec.on("mouseout", mouseout);
+                    dibujo.plain((i + 1).toString()).move(imagen.fit.x, imagen.fit.y).font({ size: 24, family: "Georgia" }).fill("#000000");
+                }
+            }
+        };
+        Sprites = __decorate([
+            aurelia_framework_1.autoinject,
+            __metadata("design:paramtypes", [aurelia_framework_1.TaskQueue])
+        ], Sprites);
+        return Sprites;
+    }());
+    exports.Sprites = Sprites;
+});
+
+
+
+define('resources/index',["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    function configure(config) {
+    }
+    exports.configure = configure;
+});
+
+
+
+/******************************************************************************
+ 
+ This is a binary tree based bin packing algorithm that is more complex than
+ the simple Packer (packer.js). Instead of starting off with a fixed width and
+ height, it starts with the width and height of the first block passed and then
+ grows as necessary to accomodate each subsequent block. As it grows it attempts
+ to maintain a roughly square ratio by making 'smart' choices about whether to
+ grow right or down.
+ 
+ When growing, the algorithm can only grow to the right OR down. Therefore, if
+ the new block is BOTH wider and taller than the current target then it will be
+ rejected. This makes it very important to initialize with a sensible starting
+ width and height. If you are providing sorted input (largest first) then this
+ will not be an issue.
+ 
+ A potential way to solve this limitation would be to allow growth in BOTH
+ directions at once, but this requires maintaining a more complex tree
+ with 3 children (down, right and center) and that complexity can be avoided
+ by simply chosing a sensible starting block.
+ 
+ Best results occur when the input blocks are sorted by height, or even better
+ when sorted by max(width,height).
+ 
+ Inputs:
+ ------
+ 
+ blocks: array of any objects that have .w and .h attributes
+ 
+ Outputs:
+ -------
+ 
+ marks each block that fits with a .fit attribute pointing to a
+ node with .x and .y coordinates
+ 
+ Example:
+ -------
+ 
+ var blocks = [
+ { w: 100, h: 100 },
+ { w: 100, h: 100 },
+ { w:  80, h:  80 },
+ { w:  80, h:  80 },
+ etc
+ etc
+ ];
+ 
+ var packer = new GrowingPacker();
+ packer.fit(blocks);
+ 
+ for(var n = 0 ; n < blocks.length ; n++) {
+ var block = blocks[n];
+ if (block.fit) {
+ Draw(block.fit.x, block.fit.y, block.w, block.h);
+ }
+ }
+ 
+ 
+ ******************************************************************************/
+
+GrowingPacker = function () { };
+
+GrowingPacker.prototype = {
+
+    fit: function (blocks) {
+        for (var i = 0; i < blocks.length; i++) {
+            blocks[i].w = blocks[i].width;
+            blocks[i].h = blocks[i].height;
+        }
+        blocks.sort(function (a, b) {
+            return b.w + b.h > a.w + a.h;
+        });
+        var len = blocks.length;
+        var w = len > 0 ? blocks[0].w : 0;
+        var h = len > 0 ? blocks[0].h : 0;
+        this.root = {x: 0, y: 0, w: w, h: h};
+        for (var i = 0; i < blocks.length; i++) {
+            var block = blocks[i];
+            var node = this.findNode(this.root, block.w, block.h);
+            if (node)
+                block.fit = this.splitNode(node, block.w, block.h);
+            else
+                block.fit = this.growNode(block.w, block.h);
+        }
+    },
+
+    findNode: function (root, w, h) {
+        if (root.used)
+            return this.findNode(root.right, w, h) || this.findNode(root.down, w, h);
+        else if ((w <= root.w) && (h <= root.h))
+            return root;
+        else
+            return null;
+    },
+
+    splitNode: function (node, w, h) {
+        node.used = true;
+        node.down = {x: node.x, y: node.y + h, w: node.w, h: node.h - h};
+        node.right = {x: node.x + w, y: node.y, w: node.w - w, h: h};
+        return node;
+    },
+
+    growNode: function (w, h) {
+        var canGrowDown = (w <= this.root.w);
+        var canGrowRight = (h <= this.root.h);
+
+        var shouldGrowRight = canGrowRight && (this.root.h >= (this.root.w + w)); // attempt to keep square-ish by growing right when height is much greater than width
+        var shouldGrowDown = canGrowDown && (this.root.w >= (this.root.h + h)); // attempt to keep square-ish by growing down  when width  is much greater than height
+
+        if (shouldGrowRight)
+            return this.growRight(w, h);
+        else if (shouldGrowDown)
+            return this.growDown(w, h);
+        else if (canGrowRight)
+            return this.growRight(w, h);
+        else if (canGrowDown)
+            return this.growDown(w, h);
+        else
+            return null; // need to ensure sensible root starting size to avoid this happening
+    },
+
+    growRight: function (w, h) {
+        this.root = {
+            used: true,
+            x: 0,
+            y: 0,
+            w: this.root.w + w,
+            h: this.root.h,
+            down: this.root,
+            right: {x: this.root.w, y: 0, w: w, h: this.root.h}
+        };
+        var node = this.findNode(this.root, w, h);
+        if (node)
+            return this.splitNode(node, w, h);
+        else
+            return null;
+    },
+
+    growDown: function (w, h) {
+        this.root = {
+            used: true,
+            x: 0,
+            y: 0,
+            w: this.root.w,
+            h: this.root.h + h,
+            down: {x: 0, y: this.root.h, w: this.root.w, h: h},
+            right: this.root
+        };
+        var node = this.findNode(this.root, w, h);
+        if (node)
+            return this.splitNode(node, w, h);
+        else
+            return null;
+    }
+
+};
+
+
+
+define("packer.growing", [],function(){});
+
+define('text!app.html', ['module'], function(module) { module.exports = "<template><require from=bootstrap/css/bootstrap.css></require><nav class=\"navbar navbar-inverse\"><div class=container-fluid><div class=navbar-header><button type=button class=\"navbar-toggle collapsed\" data-toggle=collapse data-target=#bs-example-navbar-collapse-2><span class=sr-only>Toggle navigation</span><span class=icon-bar></span><span class=icon-bar></span><span class=icon-bar></span></button><a class=navbar-brand href=#>SpriteCSS</a></div><div class=\"collapse navbar-collapse\" id=bs-example-navbar-collapse-2><ul class=\"nav navbar-nav\"></ul><ul class=\"nav navbar-nav navbar-right\"></ul></div></div></nav><router-view></router-view></template>"; });
+define('text!sprites.html', ['module'], function(module) { module.exports = "<template><div class=container><h1>CSS Sprite Responsive</h1><p>Genera reglas CSS para sprites auto ajustables, usando imágenes locales</p><form><div class=form-group><label for=inputClaseBase>Clase Base</label><input type=text class=form-control placeholder=\"Clase base para todos los elementos\" value=sprite id=inputClaseBase value.bind=claseBase></div><div class=form-group><label for=inputPrefijo>Prefijo</label><input type=text class=form-control placeholder=\"Prefijo a cada elemento\" value=sprite- id=inputPrefijo value.bind=prefijo></div><div class=form-group><label for=inputArchivos>Imagenes</label><input type=file multiple accept=image/* id=inputArchivos files.bind=archivos></div><button type=button class=\"btn btn-default\" click.delegate=procesar()>Generar</button></form></div><div class=container id=divGenerado show.bind=cssGenerado><h2>Resultado</h2><div class=clearfix></div><div class=form-group><label for=cssGenerado>CSS</label><span class=pull-right><a href=# click.delegate=copiarTexto()>Copiar&nbsp;<span class=\"glyphicon glyphicon-copy\"></span></a>&nbsp;&nbsp;<a href=# click.delegate=descargarTexto()>Descargar&nbsp;<span class=\"glyphicon glyphicon-download-alt\"></span></a></span><textarea class=form-control value.bind=cssGenerado rows=1 id=cssGenerado style=resize:none></textarea></div><div class=form-group><label>Ejemplo de uso</label><pre id=areaEjemplo innerhtml.bind=ejemplo>\r\n            </pre></div><div class=row><div class=\"col-xs-12 form-group\"><a href=# class=pull-right download=png.png click.delegate=descargarSpriteSheet()>Descargar spritesheet&nbsp;<span class=\"glyphicon glyphicon-download-alt\"></span></a></div><div class=col-xs-12 id=dibujo></div></div></div></template>"; });
+//# sourceMappingURL=app-bundle.js.map

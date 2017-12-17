@@ -7,35 +7,16 @@ import * as SVG from "svg.js";
 
 @autoinject
 export class Sprites {
-    private claseBase: string;
-    private prefijo: string;
+    private claseBase = "sprite";
+    private prefijo = "sprite-";
     private archivos: FileList;
     private cssGenerado: string;
-    private ejemplo: string;
+    private ejemplo = "";
     private taskqeue: TaskQueue;
     private packer;
     private imagenes: any[];
     constructor(taskqeue: TaskQueue) {
         this.taskqeue = taskqeue;
-        this.claseBase = "sprite";
-        this.prefijo = "sprite-";
-    }
-    descargar() {
-        if (this.packer == null || this.imagenes === null) {
-            console.log("Packer no generado o sin imagenes");
-            return;
-        }
-        var canvas = document.createElement("canvas");
-        canvas.width = this.packer.root.w;
-        canvas.height = this.packer.root.h;
-        var ctx = canvas.getContext("2d");
-        for (var i = 0; i < this.imagenes.length; i++) {
-            var imagen = this.imagenes[i];
-            if (imagen.fit) {
-                ctx.drawImage(imagen, imagen.fit.x, imagen.fit.y);
-            }
-        }
-        window.open(canvas.toDataURL("image/png"));
     }
     procesar(): void {
         if (this.archivos === undefined || this.archivos.length <= 0) {
@@ -53,6 +34,23 @@ export class Sprites {
                 document.getElementById("divGenerado").scrollIntoView({behavior: "smooth", block: "start"});
             });
         })
+    }
+    descargarSpriteSheet() {
+        if (this.packer == null || this.imagenes === null) {
+            console.log("Packer no generado o sin imagenes");
+            return;
+        }
+        var canvas = document.createElement("canvas");
+        canvas.width = this.packer.root.w;
+        canvas.height = this.packer.root.h;
+        var ctx = canvas.getContext("2d");
+        for (var i = 0; i < this.imagenes.length; i++) {
+            var imagen = this.imagenes[i];
+            if (imagen.fit) {
+                ctx.drawImage(imagen, imagen.fit.x, imagen.fit.y);
+            }
+        }
+        window.open(canvas.toDataURL("image/png"));
     }
     generarCss(imagenes): string {
         imagenes.sort((a, b) => {
@@ -84,7 +82,48 @@ export class Sprites {
         });
         return css;
     }
-    porcentage(posicion: number, dimensionContenedor: number, dimensionImagen: number): number {
+    copiarTexto(): void {
+        if (this.cssGenerado === null) {
+            console.log("No hay texto generado");
+            return;
+        }
+        var t = <HTMLTextAreaElement> document.createElement("textarea");
+        t.style.position = 'fixed';
+        t.style.top = "0";
+        t.style.left = "0";
+        t.style.width = '2em';
+        t.style.height = '2em';
+        t.style.padding = "0";
+        t.style.border = 'none';
+        t.style.outline = 'none';
+        t.style.boxShadow = 'none';
+        t.style.background = 'transparent';
+        t.value = this.cssGenerado;
+
+        document.body.appendChild(t);
+        t.select();
+        try {
+            document.execCommand(("Copy"));
+        } catch (err) {
+            console.log("Copia no permitida");
+        }
+        document.body.removeChild(t);
+    }
+    descargarTexto(): void {
+        if (this.cssGenerado === null) {
+            console.log("No hay texto generado");
+            return;
+        }
+        var a = document.createElement("a");
+        a.setAttribute("href", "data:text/plain;charset=utf-8," + encodeURIComponent(this.cssGenerado));
+        a.setAttribute("download", "sprites.css");
+        a.style.display = "none";
+        document.body.appendChild(a);
+        console.log(a);
+        a.click();
+        document.body.removeChild(a);
+    }
+    private porcentage(posicion: number, dimensionContenedor: number, dimensionImagen: number): number {
         var diferencia = dimensionContenedor - dimensionImagen;
         if (diferencia === 0) {
             return 0;
