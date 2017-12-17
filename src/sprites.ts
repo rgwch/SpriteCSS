@@ -3,6 +3,8 @@ import "packer.growing";
 
 declare var GrowingPacker;
 
+import * as SVG from "svg.js";
+
 @autoinject
 export class Sprites {
     private claseBase: string;
@@ -11,14 +13,12 @@ export class Sprites {
     private cssGenerado: string;
     private ejemplo: string;
     private taskqeue: TaskQueue;
-    private canvas: HTMLCanvasElement;
+    private packer;
+    private imagenes: any[];
     constructor(taskqeue: TaskQueue) {
         this.taskqeue = taskqeue;
         this.claseBase = "sprite";
         this.prefijo = "sprite-";
-    }
-    attached(): void {
-        this.canvas = <HTMLCanvasElement> document.getElementById("canvasDemo");
     }
     generar(): void {
         if (this.archivos === undefined || this.archivos.length <= 0) {
@@ -26,12 +26,10 @@ export class Sprites {
             return;
         }
         this.cargarImagenes(this.archivos).then(imagenes => {
-            var packer = new GrowingPacker();
-            packer.fit(imagenes);
-
-            this.canvas.width = packer.root.w;
-            this.canvas.height = packer.root.h;
-            this.dibujarImagenes(imagenes);
+            this.imagenes = imagenes;
+            this.packer = new GrowingPacker();
+            this.packer.fit(imagenes);
+            this.dibujarImagenes();
             this.cssGenerado = this.generarCss(imagenes);
             this.ejemplo = "&lt;span class=&quot;" + this.claseBase + " " + this.prefijo + imagenes[0].name + "&quot;&gt;&lt;&#x2F;span&gt;";
             this.taskqeue.queueMicroTask(() => {
@@ -51,7 +49,7 @@ export class Sprites {
                 return 0;
             }
         });
-        var width = this.canvas.width, height = this.canvas.height;
+        var width = this.packer.root.w, height = this.packer.root.h;
         var css = "";
         var reglaBase = ".".concat(this.claseBase, " { width: 100%; height: auto; display: inline-block; background-size: 0%; background-image: url('png.png');}\n");
         css += reglaBase;
@@ -103,53 +101,64 @@ export class Sprites {
             reader.readAsDataURL(archivo);
         });
     }
-    private dibujarImagenes(imagenes) {
-        var ctx = this.canvas.getContext("2d");
-        this.dibujarRectangulos(ctx, imagenes);
-        ctx.fillStyle = "rgb(255,255,255,1)";
-        this.dibujarContorno(ctx, imagenes);
-        this.dibujarImagenesEnContext(ctx, imagenes);
-        ctx.font = "24px Georgia";
-        ctx.textBaseline = "top";
-        this.dibujarNumeracion(ctx, imagenes);
+    private colorAleatorio(opacidad?: number): string {
+        var opacidadHex = "ff";
+        if (opacidad && opacidad <= 1 && opacidad >= 0) {
+            opacidadHex = Math.floor(opacidad * 256).toString(16);
+            if (opacidadHex.length < 2) {
+                opacidadHex = "00".substr(0, 2 - opacidadHex.length) + opacidadHex;
+            }
+        }
+        var colorHex = Math.floor(Math.random() * 16777215).toString(16);
+        if (colorHex.length < 6) {
+            colorHex = "000000".substr(0, 6 - colorHex.length) + colorHex;
+        }
+        return "#".concat(colorHex).concat(opacidadHex);
     }
-    private dibujarRectangulos(ctx: CanvasRenderingContext2D, imagenes): void {
-        for (var i = 0; i < imagenes.length; i++) {
-            var imagen = imagenes[i];
+    private dibujarImagenes() {
+        if (this.archivos === undefined || this.archivos.length <= 0) {
+            console.log("Imagenes requeridas");
+            return;
+        }
+        var areaDibujo = document.getElementById("dibujo");
+        areaDibujo.innerText = "";
+
+        var dibujo = SVG(areaDibujo).size(this.packer.root.w, this.packer.root.h);
+        dibujo.viewbox(0, 0, this.packer.root.w, this.packer.root.h);
+        dibujo.addClass("img-responsive");
+        dibujo.addClass("center-block");
+        var mouseover = function () {
+            this.fill({opacity: 1});
+        }
+        var mouseout = function () {
+            this.fill({opacity: .1});
+        }
+        for (var i = 0; i < this.imagenes.length; i++) {
+            var imagen = this.imagenes[i];
             if (imagen.fit) {
-                ctx.fillStyle = this.color();
-                ctx.fillRect(imagen.fit.x, imagen.fit.y, imagen.width, imagen.height);
+                var rec = dibujo.rect(imagen.width, imagen.height).move(imagen.fit.x, imagen.fit.y).fill({color: this.colorAleatorio(), opacity: .1}).stroke("#000000");
+                dibujo.image(imagen.src).move(imagen.fit.x, imagen.fit.y).style("pointer-events", "none");
+                rec.on("mouseover", mouseover);
+                rec.on("mouseout", mouseout);
+                dibujo.plain((i + 1).toString()).move(imagen.fit.x, imagen.fit.y).font({size: 24, family: "Georgia"}).fill("#000000");
             }
         }
     }
-    private color(): string {
-        var r = Math.floor(Math.random() * 255) + 1;
-        var g = Math.floor(Math.random() * 255) + 1;
-        var b = Math.floor(Math.random() * 255) + 1;
-        return "rgb(" + r + "," + g + "," + b + "," + ".5)";
-    }
-    private dibujarContorno(ctx: CanvasRenderingContext2D, imagenes): void {
-        for (var i = 0; i < imagenes.length; i++) {
-            var imagen = imagenes[i];
-            if (imagen.fit) {
-                ctx.strokeRect(imagen.fit.x, imagen.fit.y, imagen.width, imagen.height);
-            }
+    private descargar() {
+        if (this.packer == null || this.imagenes === null) {
+            console.log("Packer no generado o sin imagenes");
+            return;
         }
-    }
-    private dibujarImagenesEnContext(ctx: CanvasRenderingContext2D, imagenes): void {
-        for (var i = 0; i < imagenes.length; i++) {
-            var imagen = imagenes[i];
+        var canvas = document.createElement("canvas");
+        canvas.width = this.packer.root.w;
+        canvas.height = this.packer.root.h;
+        var ctx = canvas.getContext("2d");
+        for (var i = 0; i < this.imagenes.length; i++) {
+            var imagen = this.imagenes[i];
             if (imagen.fit) {
                 ctx.drawImage(imagen, imagen.fit.x, imagen.fit.y);
             }
         }
-    }
-    private dibujarNumeracion(ctx: CanvasRenderingContext2D, imagenes): void {
-        for (var i = 0; i < imagenes.length; i++) {
-            var imagen = imagenes[i];
-            if (imagen.fit) {
-                ctx.fillText((i + 1) + "", imagen.fit.x, imagen.fit.y);
-            }
-        }
+        var url = canvas.toDataURL("image/png");
     }
 }
