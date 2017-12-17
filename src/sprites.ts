@@ -53,7 +53,7 @@ export class Sprites {
         });
         var width = this.canvas.width, height = this.canvas.height;
         var css = "";
-        var reglaBase = ".".concat(this.claseBase, " { width: 100%; height: 100%; display: inline-block; background-size: 0%; background-image: url('png.png');}\n");
+        var reglaBase = ".".concat(this.claseBase, " { width: 100%; height: auto; display: inline-block; background-size: 0%; background-image: url('png.png');}\n");
         css += reglaBase;
         imagenes.forEach(imagen => {
             if (imagen.fit) {
