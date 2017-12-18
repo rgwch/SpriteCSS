@@ -27,3 +27,4 @@ node_modules
 /scripts
 nbproject/private/private.xml
 /bootstrap/
+!/scripts/
