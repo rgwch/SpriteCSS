@@ -69,7 +69,11 @@ define('sprites',["require", "exports", "aurelia-framework", "svg.js", "packer.g
         }
         Sprites.prototype.procesar = function () {
             var _this = this;
-            if (this.archivos === undefined || this.archivos.length <= 0) {
+            if (this.claseBase === null || this.claseBase.trim().length === 0) {
+                console.log("Clase base no definida");
+                return;
+            }
+            else if (this.archivos === undefined || this.archivos.length <= 0) {
                 console.log("Imagenes requeridas");
                 return;
             }

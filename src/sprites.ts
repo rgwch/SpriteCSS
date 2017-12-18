@@ -20,7 +20,10 @@ export class Sprites {
         this.taskqeue = taskqeue;
     }
     procesar(): void {
-        if (this.archivos === undefined || this.archivos.length <= 0) {
+        if (this.claseBase === null || this.claseBase.trim().length === 0) {
+            console.log("Clase base no definida");
+            return;
+        } else if (this.archivos === undefined || this.archivos.length <= 0) {
             console.log("Imagenes requeridas");
             return;
         }
