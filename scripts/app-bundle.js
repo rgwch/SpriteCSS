@@ -73,6 +73,7 @@ define('sprites',["require", "exports", "aurelia-framework", "svg.js", "packer.g
                 console.log("Imagenes requeridas");
                 return;
             }
+            this.nombreArchivo = this.claseBase;
             this.cargarImagenes(this.archivos).then(function (imagenes) {
                 _this.imagenes = imagenes;
                 _this.packer = new GrowingPacker();
@@ -84,23 +85,6 @@ define('sprites',["require", "exports", "aurelia-framework", "svg.js", "packer.g
                     document.getElementById("divGenerado").scrollIntoView({ behavior: "smooth", block: "start" });
                 });
             });
-        };
-        Sprites.prototype.descargarSpriteSheet = function () {
-            if (this.packer == null || this.imagenes === null) {
-                console.log("Packer no generado o sin imagenes");
-                return;
-            }
-            var canvas = document.createElement("canvas");
-            canvas.width = this.packer.root.w;
-            canvas.height = this.packer.root.h;
-            var ctx = canvas.getContext("2d");
-            for (var i = 0; i < this.imagenes.length; i++) {
-                var imagen = this.imagenes[i];
-                if (imagen.fit) {
-                    ctx.drawImage(imagen, imagen.fit.x, imagen.fit.y);
-                }
-            }
-            window.open(canvas.toDataURL("image/png"));
         };
         Sprites.prototype.generarCss = function (imagenes) {
             var _this = this;
@@ -119,8 +103,10 @@ define('sprites',["require", "exports", "aurelia-framework", "svg.js", "packer.g
             });
             var width = this.packer.root.w, height = this.packer.root.h;
             var css = "";
-            var reglaBase = ".".concat(this.claseBase, " { width: 100%; height: auto; display: inline-block; background-size: 0%; background-image: url('png.png');}\n");
+            var reglaBase = ".".concat(this.claseBase, " { width: 100%; height: auto; display: inline-block; background-size: 0%; background-image: url(", this.claseBase, ".png);}\n");
             css += reglaBase;
+            var ajuste = "svg.".concat(this.claseBase, ".vertical, img.", this.claseBase, ".vertical{ height: 100%!important; width: auto!important; padding-top: 0!important;}\n");
+            css += ajuste;
             imagenes.forEach(function (imagen) {
                 if (imagen.fit) {
                     var nombre = imagen.name;
@@ -161,6 +147,33 @@ define('sprites',["require", "exports", "aurelia-framework", "svg.js", "packer.g
                 console.log("Copia no permitida");
             }
             document.body.removeChild(t);
+        };
+        Sprites.prototype.descargarSpriteSheet = function () {
+            if (this.packer == null || this.imagenes === null) {
+                console.log("Packer no generado o sin imagenes");
+                return;
+            }
+            if (this.nombreArchivo === null) {
+                this.nombreArchivo = "png";
+            }
+            var canvas = document.createElement("canvas");
+            canvas.width = this.packer.root.w;
+            canvas.height = this.packer.root.h;
+            var ctx = canvas.getContext("2d");
+            for (var i = 0; i < this.imagenes.length; i++) {
+                var imagen = this.imagenes[i];
+                if (imagen.fit) {
+                    ctx.drawImage(imagen, imagen.fit.x, imagen.fit.y);
+                }
+            }
+            var a = document.createElement("a");
+            a.setAttribute("href", canvas.toDataURL("image/png"));
+            a.setAttribute("download", this.nombreArchivo + ".png");
+            a.style.display = "none";
+            document.body.appendChild(a);
+            console.log(a);
+            a.click();
+            document.body.removeChild(a);
         };
         Sprites.prototype.descargarTexto = function () {
             if (this.cssGenerado === null) {
@@ -434,5 +447,7 @@ GrowingPacker.prototype = {
 define("packer.growing", [],function(){});
 
 define('text!app.html', ['module'], function(module) { module.exports = "<template><require from=bootstrap/css/bootstrap.css></require><nav class=\"navbar navbar-inverse\"><div class=container-fluid><div class=navbar-header><button type=button class=\"navbar-toggle collapsed\" data-toggle=collapse data-target=#bs-example-navbar-collapse-2><span class=sr-only>Toggle navigation</span><span class=icon-bar></span><span class=icon-bar></span><span class=icon-bar></span></button><a class=navbar-brand href=#>SpriteCSS</a></div><div class=\"collapse navbar-collapse\" id=bs-example-navbar-collapse-2><ul class=\"nav navbar-nav\"></ul><ul class=\"nav navbar-nav navbar-right\"></ul></div></div></nav><router-view></router-view></template>"; });
-define('text!sprites.html', ['module'], function(module) { module.exports = "<template><div class=container><h1>CSS Sprite Responsive</h1><p>Genera reglas CSS para sprites auto ajustables, usando imágenes locales</p><form><div class=form-group><label for=inputClaseBase>Clase Base</label><input type=text class=form-control placeholder=\"Clase base para todos los elementos\" value=sprite id=inputClaseBase value.bind=claseBase></div><div class=form-group><label for=inputPrefijo>Prefijo</label><input type=text class=form-control placeholder=\"Prefijo a cada elemento\" value=sprite- id=inputPrefijo value.bind=prefijo></div><div class=form-group><label for=inputArchivos>Imagenes</label><input type=file multiple accept=image/* id=inputArchivos files.bind=archivos></div><button type=button class=\"btn btn-default\" click.delegate=procesar()>Generar</button></form></div><div class=container id=divGenerado show.bind=cssGenerado><h2>Resultado</h2><div class=clearfix></div><div class=form-group><label for=cssGenerado>CSS</label><span class=pull-right><a href=# click.delegate=copiarTexto()>Copiar&nbsp;<span class=\"glyphicon glyphicon-copy\"></span></a>&nbsp;&nbsp;<a href=# click.delegate=descargarTexto()>Descargar&nbsp;<span class=\"glyphicon glyphicon-download-alt\"></span></a></span><textarea class=form-control value.bind=cssGenerado rows=1 id=cssGenerado style=resize:none></textarea></div><div class=form-group><label>Ejemplo de uso</label><pre id=areaEjemplo innerhtml.bind=ejemplo>\r\n            </pre></div><div class=row><div class=\"col-xs-12 form-group\"><a href=# class=pull-right download=png.png click.delegate=descargarSpriteSheet()>Descargar spritesheet&nbsp;<span class=\"glyphicon glyphicon-download-alt\"></span></a></div><div class=col-xs-12 id=dibujo></div></div></div></template>"; });
+define('text!sprites.css', ['module'], function(module) { module.exports = ".sprite {\n  width: 100%;\n  height: auto;\n  display: inline-block;\n  background-size: 0%;\n  background-image: url(src/sprites.png);\n}\n.sprite.sprite-F_01 {\n  padding-top: 238.0952380952381%;\n  background-position: 37.76824034334764% 100%;\n  background-size: 932.1428571428571% 300%;\n}\n.sprite.sprite-F_02 {\n  padding-top: 209.05923344947738%;\n  background-position: 14.791464597478177% 50%;\n  background-size: 818.4668989547039% 300%;\n}\n.sprite.sprite-F_03 {\n  padding-top: 266.66666666666663%;\n  background-position: 90.67796610169492% 50%;\n  background-size: 1044% 300%;\n}\n.sprite.sprite-F_04 {\n  padding-top: 157.48031496062993%;\n  background-position: 0% 0%;\n  background-size: 616.5354330708661% 300%;\n}\n.sprite.sprite-F_05 {\n  padding-top: 215.0537634408602%;\n  background-position: 66.18357487922705% 0%;\n  background-size: 841.9354838709678% 300%;\n}\n.sprite.sprite-F_06 {\n  padding-top: 242.914979757085%;\n  background-position: 61.607992388201716% 100%;\n  background-size: 951.0121457489879% 300%;\n}\n.sprite.sprite-F_07 {\n  padding-top: 186.33540372670808%;\n  background-position: 35.86581154415392% 0%;\n  background-size: 729.5031055900621% 300%;\n}\n.sprite.sprite-F_08 {\n  padding-top: 220.58823529411765%;\n  background-position: 0% 100%;\n  background-size: 863.6029411764706% 300%;\n}\n.sprite.sprite-lider_01 {\n  padding-top: 267.85714285714283%;\n  background-position: 90.63529411764706% 100%;\n  background-size: 1048.6607142857142% 300%;\n}\n.sprite.sprite-lider_02 {\n  padding-top: 238.0952380952381%;\n  background-position: 25.75107296137339% 100%;\n  background-size: 932.1428571428571% 300%;\n}\n.sprite.sprite-lider_03 {\n  padding-top: 245.9016393442623%;\n  background-position: 73.25415676959621% 100%;\n  background-size: 962.704918032787% 300%;\n}\n.sprite.sprite-lider_04 {\n  padding-top: 340.90909090909093%;\n  background-position: 99.44776806258628% 50%;\n  background-size: 1334.6590909090908% 300%;\n}\n.sprite.sprite-lider_05 {\n  padding-top: 173.41040462427745%;\n  background-position: 19.021467798302545% 0%;\n  background-size: 678.9017341040462% 300%;\n}\n.sprite.sprite-lider_06 {\n  padding-top: 209.7902097902098%;\n  background-position: 28.696073679108096% 50%;\n  background-size: 821.3286713286714% 300%;\n}\n.sprite.sprite-lider_07 {\n  padding-top: 295.5665024630542%;\n  background-position: 53.91425908667288% 50%;\n  background-size: 1157.142857142857% 300%;\n}\n.sprite.sprite-lider_08 {\n  padding-top: 223.88059701492534%;\n  background-position: 13.070639115809707% 100%;\n  background-size: 876.4925373134329% 300%;\n}\n.sprite.sprite-M_01 {\n  padding-top: 215.0537634408602%;\n  background-position: 42.41545893719807% 50%;\n  background-size: 841.9354838709678% 300%;\n}\n.sprite.sprite-M_02 {\n  padding-top: 196.72131147540983%;\n  background-position: 0% 50%;\n  background-size: 770.1639344262295% 300%;\n}\n.sprite.sprite-M_03 {\n  padding-top: 255.31914893617022%;\n  background-position: 91.10690633869442% 0%;\n  background-size: 999.5744680851064% 300%;\n}\n.sprite.sprite-M_04 {\n  padding-top: 215.82733812949638%;\n  background-position: 66.15161757605021% 50%;\n  background-size: 844.9640287769784% 300%;\n}\n.sprite.sprite-M_05 {\n  padding-top: 239.04382470119523%;\n  background-position: 49.76167778836987% 100%;\n  background-size: 935.8565737051792% 300%;\n}\n.sprite.sprite-M_06 {\n  padding-top: 216.60649819494586%;\n  background-position: 79.58494208494209% 0%;\n  background-size: 848.0144404332129% 300%;\n}\n.sprite.sprite-M_07 {\n  padding-top: 319.1489361702128%;\n  background-position: 100% 0%;\n  background-size: 1249.468085106383% 300%;\n}\n.sprite.sprite-M_08 {\n  padding-top: 219.7802197802198%;\n  background-position: 79.43159922928709% 50%;\n  background-size: 860.4395604395604% 300%;\n}\n.sprite.sprite-oak {\n  padding-top: 186.9158878504673%;\n  background-position: 51.7258382642998% 0%;\n  background-size: 731.7757009345795% 300%;\n}\nsvg.sprite.vertical,\nimg.sprite.vertical {\n  height: 100%!important;\n  width: auto!important;\n  padding-top: 0!important;\n}\n"; });
+define('text!sprites.html', ['module'], function(module) { module.exports = "<template><require from=./sprites.css></require><div class=container><h1>CSS Sprite Responsive</h1><p>Genera reglas CSS para sprites auto ajustables, usando imágenes locales</p><form><div class=form-group><label for=inputClaseBase>Clase Base</label><input type=text class=form-control placeholder=\"Clase base para todos los elementos\" value=sprite id=inputClaseBase value.bind=claseBase></div><div class=form-group><label for=inputPrefijo>Prefijo</label><input type=text class=form-control placeholder=\"Prefijo a cada elemento\" value=sprite- id=inputPrefijo value.bind=prefijo></div><div class=form-group><label for=inputArchivos>Imagenes</label><input type=file multiple accept=image/* id=inputArchivos files.bind=archivos></div><button type=button class=\"btn btn-default\" click.delegate=procesar()>Generar</button></form></div><div class=container id=divGenerado show.bind=cssGenerado><h2>Resultado</h2><div class=clearfix></div><div class=form-group><label for=cssGenerado>CSS</label><span class=pull-right><a href=# click.delegate=copiarTexto()>Copiar&nbsp;<span class=\"glyphicon glyphicon-copy\"></span></a>&nbsp;&nbsp;<a href=# click.delegate=descargarTexto()>Descargar&nbsp;<span class=\"glyphicon glyphicon-download-alt\"></span></a></span><textarea class=form-control value.bind=cssGenerado rows=1 id=cssGenerado style=resize:none></textarea></div><div class=form-group><label>Ejemplo de uso</label><pre id=areaEjemplo innerhtml.bind=ejemplo>\r\n            </pre></div><div class=row><div class=\"col-xs-12 form-group\"><a href=# class=pull-right download=png.png click.delegate=descargarSpriteSheet()>Descargar spritesheet&nbsp;<span class=\"glyphicon glyphicon-download-alt\"></span></a></div><div class=col-xs-12 id=dibujo></div></div></div></template>"; });
+define('text!sprite.css', ['module'], function(module) { module.exports = ".sprite {\n  width: 100%;\n  height: auto;\n  display: inline-block;\n  background-size: 0%;\n  background-image: url('src/sprites.png');\n}\n.sprite.sprite-F_01 {\n  padding-top: 238.0952380952381%;\n  background-position: 37.76824034334764% 100%;\n  background-size: 932.1428571428571% 300%;\n}\n.sprite.sprite-F_02 {\n  padding-top: 209.05923344947738%;\n  background-position: 14.791464597478177% 50%;\n  background-size: 818.4668989547039% 300%;\n}\n.sprite.sprite-F_03 {\n  padding-top: 266.66666666666663%;\n  background-position: 90.67796610169492% 50%;\n  background-size: 1044% 300%;\n}\n.sprite.sprite-F_04 {\n  padding-top: 157.48031496062993%;\n  background-position: 0% 0%;\n  background-size: 616.5354330708661% 300%;\n}\n.sprite.sprite-F_05 {\n  padding-top: 215.0537634408602%;\n  background-position: 66.18357487922705% 0%;\n  background-size: 841.9354838709678% 300%;\n}\n.sprite.sprite-F_06 {\n  padding-top: 242.914979757085%;\n  background-position: 61.607992388201716% 100%;\n  background-size: 951.0121457489879% 300%;\n}\n.sprite.sprite-F_07 {\n  padding-top: 186.33540372670808%;\n  background-position: 35.86581154415392% 0%;\n  background-size: 729.5031055900621% 300%;\n}\n.sprite.sprite-F_08 {\n  padding-top: 220.58823529411765%;\n  background-position: 0% 100%;\n  background-size: 863.6029411764706% 300%;\n}\n.sprite.sprite-lider_01 {\n  padding-top: 267.85714285714283%;\n  background-position: 90.63529411764706% 100%;\n  background-size: 1048.6607142857142% 300%;\n}\n.sprite.sprite-lider_02 {\n  padding-top: 238.0952380952381%;\n  background-position: 25.75107296137339% 100%;\n  background-size: 932.1428571428571% 300%;\n}\n.sprite.sprite-lider_03 {\n  padding-top: 245.9016393442623%;\n  background-position: 73.25415676959621% 100%;\n  background-size: 962.704918032787% 300%;\n}\n.sprite.sprite-lider_04 {\n  padding-top: 340.90909090909093%;\n  background-position: 99.44776806258628% 50%;\n  background-size: 1334.6590909090908% 300%;\n}\n.sprite.sprite-lider_05 {\n  padding-top: 173.41040462427745%;\n  background-position: 19.021467798302545% 0%;\n  background-size: 678.9017341040462% 300%;\n}\n.sprite.sprite-lider_06 {\n  padding-top: 209.7902097902098%;\n  background-position: 28.696073679108096% 50%;\n  background-size: 821.3286713286714% 300%;\n}\n.sprite.sprite-lider_07 {\n  padding-top: 295.5665024630542%;\n  background-position: 53.91425908667288% 50%;\n  background-size: 1157.142857142857% 300%;\n}\n.sprite.sprite-lider_08 {\n  padding-top: 223.88059701492534%;\n  background-position: 13.070639115809707% 100%;\n  background-size: 876.4925373134329% 300%;\n}\n.sprite.sprite-M_01 {\n  padding-top: 215.0537634408602%;\n  background-position: 42.41545893719807% 50%;\n  background-size: 841.9354838709678% 300%;\n}\n.sprite.sprite-M_02 {\n  padding-top: 196.72131147540983%;\n  background-position: 0% 50%;\n  background-size: 770.1639344262295% 300%;\n}\n.sprite.sprite-M_03 {\n  padding-top: 255.31914893617022%;\n  background-position: 91.10690633869442% 0%;\n  background-size: 999.5744680851064% 300%;\n}\n.sprite.sprite-M_04 {\n  padding-top: 215.82733812949638%;\n  background-position: 66.15161757605021% 50%;\n  background-size: 844.9640287769784% 300%;\n}\n.sprite.sprite-M_05 {\n  padding-top: 239.04382470119523%;\n  background-position: 49.76167778836987% 100%;\n  background-size: 935.8565737051792% 300%;\n}\n.sprite.sprite-M_06 {\n  padding-top: 216.60649819494586%;\n  background-position: 79.58494208494209% 0%;\n  background-size: 848.0144404332129% 300%;\n}\n.sprite.sprite-M_07 {\n  padding-top: 319.1489361702128%;\n  background-position: 100% 0%;\n  background-size: 1249.468085106383% 300%;\n}\n.sprite.sprite-M_08 {\n  padding-top: 219.7802197802198%;\n  background-position: 79.43159922928709% 50%;\n  background-size: 860.4395604395604% 300%;\n}\n.sprite.sprite-oak {\n  padding-top: 186.9158878504673%;\n  background-position: 51.7258382642998% 0%;\n  background-size: 731.7757009345795% 300%;\n}\n"; });
 //# sourceMappingURL=app-bundle.js.map

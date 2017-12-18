@@ -8,6 +8,7 @@ import * as SVG from "svg.js";
 @autoinject
 export class Sprites {
     private claseBase = "sprite";
+    private nombreArchivo: string;
     private prefijo = "sprite-";
     private archivos: FileList;
     private cssGenerado: string;
@@ -23,6 +24,7 @@ export class Sprites {
             console.log("Imagenes requeridas");
             return;
         }
+        this.nombreArchivo = this.claseBase;
         this.cargarImagenes(this.archivos).then(imagenes => {
             this.imagenes = imagenes;
             this.packer = new GrowingPacker();
@@ -34,23 +36,6 @@ export class Sprites {
                 document.getElementById("divGenerado").scrollIntoView({behavior: "smooth", block: "start"});
             });
         })
-    }
-    descargarSpriteSheet() {
-        if (this.packer == null || this.imagenes === null) {
-            console.log("Packer no generado o sin imagenes");
-            return;
-        }
-        var canvas = document.createElement("canvas");
-        canvas.width = this.packer.root.w;
-        canvas.height = this.packer.root.h;
-        var ctx = canvas.getContext("2d");
-        for (var i = 0; i < this.imagenes.length; i++) {
-            var imagen = this.imagenes[i];
-            if (imagen.fit) {
-                ctx.drawImage(imagen, imagen.fit.x, imagen.fit.y);
-            }
-        }
-        window.open(canvas.toDataURL("image/png"));
     }
     generarCss(imagenes): string {
         imagenes.sort((a, b) => {
@@ -66,8 +51,10 @@ export class Sprites {
         });
         var width = this.packer.root.w, height = this.packer.root.h;
         var css = "";
-        var reglaBase = ".".concat(this.claseBase, " { width: 100%; height: auto; display: inline-block; background-size: 0%; background-image: url('png.png');}\n");
+        var reglaBase = ".".concat(this.claseBase, " { width: 100%; height: auto; display: inline-block; background-size: 0%; background-image: url(", this.claseBase, ".png);}\n");
         css += reglaBase;
+        var ajuste = "svg.".concat(this.claseBase, ".vertical, img.", this.claseBase, ".vertical{ height: 100%!important; width: auto!important; padding-top: 0!important;}\n");
+        css += ajuste;
         imagenes.forEach(imagen => {
             if (imagen.fit) {
                 var nombre = imagen.name;
@@ -108,6 +95,33 @@ export class Sprites {
             console.log("Copia no permitida");
         }
         document.body.removeChild(t);
+    }
+    descargarSpriteSheet() {
+        if (this.packer == null || this.imagenes === null) {
+            console.log("Packer no generado o sin imagenes");
+            return;
+        }
+        if (this.nombreArchivo === null) {
+            this.nombreArchivo = "png";
+        }
+        var canvas = document.createElement("canvas");
+        canvas.width = this.packer.root.w;
+        canvas.height = this.packer.root.h;
+        var ctx = canvas.getContext("2d");
+        for (var i = 0; i < this.imagenes.length; i++) {
+            var imagen = this.imagenes[i];
+            if (imagen.fit) {
+                ctx.drawImage(imagen, imagen.fit.x, imagen.fit.y);
+            }
+        }
+        var a = document.createElement("a");
+        a.setAttribute("href", canvas.toDataURL("image/png"));
+        a.setAttribute("download", this.nombreArchivo + ".png");
+        a.style.display = "none";
+        document.body.appendChild(a);
+        console.log(a);
+        a.click();
+        document.body.removeChild(a);
     }
     descargarTexto(): void {
         if (this.cssGenerado === null) {
