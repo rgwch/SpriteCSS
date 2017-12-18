@@ -124,7 +124,6 @@ export class Sprites {
         a.setAttribute("download", this.nombreArchivo + ".png");
         a.style.display = "none";
         document.body.appendChild(a);
-        console.log(a);
         a.click();
         document.body.removeChild(a);
     }
@@ -138,7 +137,6 @@ export class Sprites {
         a.setAttribute("download", "sprites.css");
         a.style.display = "none";
         document.body.appendChild(a);
-        console.log(a);
         a.click();
         document.body.removeChild(a);
     }

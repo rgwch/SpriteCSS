@@ -44,20 +44,19 @@
                 No es posible autoajustar el ancho del elemento cuando la altura de su contenedor cambia.
             </p>
             <p>
-                No es común desear elementos autoajustables a la altura del contenedor. Pero en caso que 
-                lo requieras, se requiere&nbsp;
-                <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/Replaced_element" target="_blank">replaced elements</a>.
+                Es poco común usar elementos autoajustables a la altura del contenedor. Pero en caso que desees, necesitas un&nbsp;
+                <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/Replaced_element" target="_blank">elemento reemplazado</a>.
                 Una técnica popular es usar elementos &nbsp;<code>&lt;img&gt;</code>&nbsp;, 
                 cuyo atributo&nbsp;<code>src</code>&nbsp;hace referencia 
                 a una&nbsp;
                 <a href="https://developer.mozilla.org/en-US/docs/Web/API/WindowBase64/Base64_encoding_and_decoding" target="_blank">imagen base 64</a>
                 &nbsp;transparente con las proporciones deseadas. 
                 Tambien es posible utilizar un elemento&nbsp;<code>&lt;svg&gt;</code>&nbsp;, definiendo 
-                sus proporciones en su atributo&nbsp;<code>viewBox</code>&nbsp;. 
-                En ambos casos es requerido conocer las dimensiones de la imagen directamente al definir la etiqueta.
+                proporciones en su atributo&nbsp;<code>viewBox</code>&nbsp;. 
+                En ambos casos es indispensable declarar las dimensiones de la imagen al definir el elemento.
             </p>
             <p>
-                Adentro de un contenedor de altura definida, agrega la imagen siguiendo el ejemplo 
+                Para lograr tal efecto con esta herramienta, dentro de un contenedor de altura definida, agrega la imagen siguiendo el ejemplo 
                 (cambia los valores&nbsp;<var>100</var>&nbsp;y&nbsp;<var>150</var>&nbsp;por las dimensiones de tu imagen):
             </p>
             <pre innerhtml.bind="ejemploVertical">
