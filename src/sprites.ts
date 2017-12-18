@@ -13,6 +13,7 @@ export class Sprites {
     private archivos: FileList;
     private cssGenerado: string;
     private ejemplo = "";
+    private ejemploVertical = "";
     private taskqeue: TaskQueue;
     private packer;
     private imagenes: any[];
@@ -35,6 +36,7 @@ export class Sprites {
             this.dibujarImagenes();
             this.cssGenerado = this.generarCss(imagenes);
             this.ejemplo = "&lt;span class=&quot;" + this.claseBase + " " + this.prefijo + imagenes[0].name + "&quot;&gt;&lt;&#x2F;span&gt;";
+            this.ejemploVertical = "&lt;svg viewBox=&quot;0 0 100 150&quot; class=&quot;" + this.claseBase + " " + this.prefijo + imagenes[0].name + " vertical&quot;&gt;&lt;&#x2F;svg&gt;";
             this.taskqeue.queueMicroTask(() => {
                 document.getElementById("divGenerado").scrollIntoView({behavior: "smooth", block: "start"});
             });
