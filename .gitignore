@@ -24,5 +24,6 @@ Thumbs.db
 node_modules
 
 # Compiled files
-scripts
+/scripts
 nbproject/private/private.xml
+/bootstrap/
