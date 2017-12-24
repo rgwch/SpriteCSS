@@ -1,7 +1,8 @@
 import {autoinject, TaskQueue} from 'aurelia-framework';
-import {ValidationRules, ValidationController, validateTrigger, validationMessages} from "aurelia-validation";
+import {ValidationRules, ValidationController, validateTrigger} from "aurelia-validation";
 import {BootstrapFormRenderer} from "./BootstrapFormRenderer";
 import {GrowingPacker} from "./packerGrowing";
+import {cargarImagenes, porcentage, colorAleatorio} from "./util";
 
 import * as SVG from "svg.js";
 
@@ -16,7 +17,7 @@ export class Sprites {
     private ejemplo = "";
     private ejemploVertical = "";
 
-    private imagenes: Imagen[];
+    private bloques: Bloque[];
     private packer: GrowingPacker;
     private taskqeue: TaskQueue;
     private validationController: ValidationController;
@@ -52,21 +53,56 @@ export class Sprites {
     }
     private generar(): void {
         this.nombreArchivo = this.claseBase;
-        this.cargarImagenes(this.archivos).then(imagenes => {
-            this.imagenes = imagenes;
+        this.cargarBloques().then(() => {
             this.packer = new GrowingPacker();
-            this.packer.fit(imagenes);
+            this.packer.fit(this.bloques);
             this.dibujarImagenes();
-            this.cssGenerado = this.generarCss(imagenes);
-            this.ejemplo = "&lt;span class=&quot;" + this.claseBase + " " + this.prefijo + imagenes[0].name + "&quot;&gt;&lt;&#x2F;span&gt;";
-            this.ejemploVertical = "&lt;svg viewBox=&quot;0 0 100 150&quot; class=&quot;" + this.claseBase + " " + this.prefijo + imagenes[0].name + " vertical&quot;&gt;&lt;&#x2F;svg&gt;";
+            this.generarCss();
             this.taskqeue.queueMicroTask(() => {
                 document.getElementById("divGenerado").scrollIntoView({behavior: "smooth", block: "start"});
             });
         })
     }
-    generarCss(imagenes: Imagen[]): string {
-        imagenes.sort((a, b) => {
+    private cargarBloques(): Promise<any> {
+        this.bloques = [];
+        return cargarImagenes(this.archivos).then(imagenes => {
+            for (let i = 0; i < imagenes.length; i++) {
+                this.bloques.push(new Bloque(imagenes[i]));
+            }
+            return Promise.resolve();
+        });
+    }
+    private dibujarImagenes() {
+        if (this.archivos === undefined || this.archivos.length <= 0) {
+            console.log("Imagenes requeridas");
+            return;
+        }
+        var areaDibujo = document.getElementById("dibujo");
+        areaDibujo.innerText = "";
+
+        var dibujo = SVG(areaDibujo).size(this.packer.root.w, this.packer.root.h);
+        dibujo.viewbox(0, 0, this.packer.root.w, this.packer.root.h);
+        dibujo.addClass("img-responsive");
+        dibujo.addClass("center-block");
+        var mouseover = function () {
+            this.fill({opacity: 1});
+        }
+        var mouseout = function () {
+            this.fill({opacity: .1});
+        }
+        for (var i = 0; i < this.bloques.length; i++) {
+            var bloque = this.bloques[i];
+            if (bloque.fit) {
+                var rec = dibujo.rect(bloque.w, bloque.h).move(bloque.fit.x, bloque.fit.y).fill({color: colorAleatorio(), opacity: .1}).stroke("#000000");
+                dibujo.image(bloque.image.src).move(bloque.fit.x, bloque.fit.y).style("pointer-events", "none");
+                rec.on("mouseover", mouseover);
+                rec.on("mouseout", mouseout);
+                dibujo.plain((i + 1).toString()).move(bloque.fit.x, bloque.fit.y).font({size: 24, family: "Georgia"}).fill("#000000");
+            }
+        }
+    }
+    private generarCss(): void {
+        this.bloques.sort((a, b) => {
             var an = a.name.toLowerCase();
             var bn = b.name.toLowerCase();
             if (an > bn) {
@@ -83,19 +119,20 @@ export class Sprites {
         css += reglaBase;
         var ajuste = "svg.".concat(this.claseBase, ".vertical, img.", this.claseBase, ".vertical{ height: 100%!important; width: auto!important; padding-top: 0!important;}\n");
         css += ajuste;
-        imagenes.forEach(imagen => {
-            if (imagen.fit) {
-                var nombre = imagen.name;
-                var posX = this.porcentage(imagen.fit.x, width, imagen.w);
-                var posY = this.porcentage(imagen.fit.y, height, imagen.h);
-                var sizeX = width / imagen.w * 100;
-                var sizeY = height / imagen.h * 100;
-                var aspectRatio = imagen.h / imagen.w * 100;
-                var regla = ".".concat(this.claseBase, ".", this.prefijo, nombre, " { padding-top: ", aspectRatio.toString(), "%; background-position: ", posX.toString(), "% ", posY.toString(), "%; background-size: ", sizeX.toString(), "% ", sizeY.toString(), "%;}\n");
+        this.bloques.forEach(bloque => {
+            if (bloque.fit) {
+                var posX = porcentage(bloque.fit.x, width, bloque.w);
+                var posY = porcentage(bloque.fit.y, height, bloque.h);
+                var sizeX = width / bloque.w * 100;
+                var sizeY = height / bloque.h * 100;
+                var aspectRatio = bloque.h / bloque.w * 100;
+                var regla = ".".concat(this.claseBase, ".", this.prefijo, bloque.name, " { padding-top: ", aspectRatio.toString(), "%; background-position: ", posX.toString(), "% ", posY.toString(), "%; background-size: ", sizeX.toString(), "% ", sizeY.toString(), "%;}\n");
                 css += regla;
             }
         });
-        return css;
+        this.ejemplo = "&lt;span class=&quot;" + this.claseBase + " " + this.prefijo + this.bloques[0].name + "&quot;&gt;&lt;&#x2F;span&gt;";
+        this.ejemploVertical = "&lt;svg viewBox=&quot;0 0 100 150&quot; class=&quot;" + this.claseBase + " " + this.prefijo + this.bloques[0].name + " vertical&quot;&gt;&lt;&#x2F;svg&gt;";
+        this.cssGenerado = css;
     }
     copiarTexto(): void {
         if (this.cssGenerado === null) {
@@ -125,7 +162,7 @@ export class Sprites {
         document.body.removeChild(t);
     }
     descargarSpriteSheet() {
-        if (this.packer == null || this.imagenes === null) {
+        if (this.packer == null || this.bloques === null) {
             console.log("Packer no generado o sin imagenes");
             return;
         }
@@ -136,10 +173,10 @@ export class Sprites {
         canvas.width = this.packer.root.w;
         canvas.height = this.packer.root.h;
         var ctx = canvas.getContext("2d");
-        for (var i = 0; i < this.imagenes.length; i++) {
-            var imagen = this.imagenes[i];
-            if (imagen.fit) {
-                ctx.drawImage(imagen.image, imagen.fit.x, imagen.fit.y);
+        for (var i = 0; i < this.bloques.length; i++) {
+            var bloque = this.bloques[i];
+            if (bloque.fit) {
+                ctx.drawImage(bloque.image, bloque.fit.x, bloque.fit.y);
             }
         }
         var a = document.createElement("a");
@@ -150,7 +187,7 @@ export class Sprites {
         a.click();
         document.body.removeChild(a);
     }
-    descargarTexto(): void {
+    descargarTextoCSS(): void {
         if (this.cssGenerado === null) {
             console.log("No hay texto generado");
             return;
@@ -163,95 +200,16 @@ export class Sprites {
         a.click();
         document.body.removeChild(a);
     }
-    private porcentage(posicion: number, dimensionContenedor: number, dimensionImagen: number): number {
-        var diferencia = dimensionContenedor - dimensionImagen;
-        if (diferencia === 0) {
-            return 0;
-        }
-        return posicion / diferencia * 100;
-    }
-    private cargarImagenes(archivos: FileList): Promise<Imagen[]> {
-        var promesas = [];
-        for (var i = 0; i < archivos.length; i++) {
-            promesas.push(this.cargarImagen(archivos.item(i)));
-        }
-        return Promise.all(promesas);
-    }
-    private cargarImagen(archivo: File): Promise<Imagen> {
-        return new Promise(function (resolve, reject) {
-            var image = new Image();
-            var reader = new FileReader();
-            reader.onload = () => {
-                image.src = reader.result;
-            }
-            image.onload = () => {
-                console.log(image);
-                var name = archivo.name.split(".")[0].replace(/\W/g, '-');
-                resolve(new Imagen(image, name));
-            }
-            image.onerror = error => {
-                reject("Problema al crear imagen " + archivo.name + "\n. Error es: " + JSON.stringify(error));
-            };
-            reader.onerror = error => {
-                reject("Problema al leer archivo " + archivo.name + "\n. Error es: " + JSON.stringify(error));
-            };
-            reader.readAsDataURL(archivo);
-        });
-    }
-    private colorAleatorio(opacidad?: number): string {
-        var opacidadHex = "ff";
-        if (opacidad && opacidad <= 1 && opacidad >= 0) {
-            opacidadHex = Math.floor(opacidad * 256).toString(16);
-            if (opacidadHex.length < 2) {
-                opacidadHex = "00".substr(0, 2 - opacidadHex.length) + opacidadHex;
-            }
-        }
-        var colorHex = Math.floor(Math.random() * 16777215).toString(16);
-        if (colorHex.length < 6) {
-            colorHex = "000000".substr(0, 6 - colorHex.length) + colorHex;
-        }
-        return "#".concat(colorHex).concat(opacidadHex);
-    }
-    private dibujarImagenes() {
-        if (this.archivos === undefined || this.archivos.length <= 0) {
-            console.log("Imagenes requeridas");
-            return;
-        }
-        var areaDibujo = document.getElementById("dibujo");
-        areaDibujo.innerText = "";
-
-        var dibujo = SVG(areaDibujo).size(this.packer.root.w, this.packer.root.h);
-        dibujo.viewbox(0, 0, this.packer.root.w, this.packer.root.h);
-        dibujo.addClass("img-responsive");
-        dibujo.addClass("center-block");
-        var mouseover = function () {
-            this.fill({opacity: 1});
-        }
-        var mouseout = function () {
-            this.fill({opacity: .1});
-        }
-        for (var i = 0; i < this.imagenes.length; i++) {
-            var imagen = this.imagenes[i];
-            if (imagen.fit) {
-                var rec = dibujo.rect(imagen.w, imagen.h).move(imagen.fit.x, imagen.fit.y).fill({color: this.colorAleatorio(), opacity: .1}).stroke("#000000");
-                dibujo.image(imagen.image.src).move(imagen.fit.x, imagen.fit.y).style("pointer-events", "none");
-                rec.on("mouseover", mouseover);
-                rec.on("mouseout", mouseout);
-                dibujo.plain((i + 1).toString()).move(imagen.fit.x, imagen.fit.y).font({size: 24, family: "Georgia"}).fill("#000000");
-            }
-        }
-    }
 }
-export class Imagen {
+export class Bloque {
     image: HTMLImageElement;
     name: string;
     w: number;
     h: number;
     fit: Nodo;
-    constructor(image: HTMLImageElement, name: string) {
+    constructor(image: HTMLImageElement) {
         this.image = image;
-        this.image.name = name;
-        this.name = name.split(".")[0].replace(/\W/g, '-');
+        this.name = image.name.split(".")[0].replace(/\W/g, '-');
         this.w = image.width;
         this.h = image.height;
     }
