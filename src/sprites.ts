@@ -37,6 +37,8 @@ export class Sprites {
             .matches(/^[a-zA-Z0-9_-]*$/).withMessage(`Sólo puede contener letras, numeros o guiones`)
             .ensure((s: Sprites) => s.prefijo)
             .required().withMessage(`Prefijo requerido`)
+            .matches(/^[a-zA-Z_].*$/).withMessage(`Debe de empezar con alguna letra o guión bajo`)
+            .matches(/^(?!__).*$/).withMessage(`No puede empezar con dos guiones bajos`)
             .matches(/^[a-zA-Z0-9_-]*$/).withMessage(`Sólo puede contener letras, numeros o guiones`)
             .ensure((s: Sprites) => s.archivos)
             .required().withMessage(`Selecciona imágenes`)
@@ -184,7 +186,7 @@ export class Sprites {
                 imagen.src = reader.result;
             }
             imagen.onload = () => {
-                imagen.name = archivo.name.split(".")[0]; //TODO: reemplazar espacios y caracteres especiales
+                imagen.name = archivo.name.split(".")[0].replace(/\W/g, '-');
                 resolve(imagen);
             }
             imagen.onerror = error => {
