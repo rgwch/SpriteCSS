@@ -1,5 +1,4 @@
 import {RouterConfiguration} from 'aurelia-router';
-import "packer.growing";
 
 export class App {
     configureRouter(config: RouterConfiguration) {

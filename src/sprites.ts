@@ -1,6 +1,6 @@
 import {autoinject, TaskQueue} from 'aurelia-framework';
 import {ValidationRules, ValidationController, validateTrigger} from "aurelia-validation";
-import {BootstrapFormRenderer} from "./BootstrapFormRenderer";
+import {BootstrapFormRenderer} from "./bootstrapFormRenderer";
 import {GrowingPacker} from "./packerGrowing";
 import {cargarImagenes, porcentage, colorAleatorio} from "./util";
 
