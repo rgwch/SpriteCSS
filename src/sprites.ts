@@ -1,33 +1,55 @@
 import {autoinject, TaskQueue} from 'aurelia-framework';
+import {ValidationRules, ValidationController, validateTrigger, validationMessages} from "aurelia-validation";
+import {BootstrapFormRenderer} from "./BootstrapFormRenderer";
+
 import "packer.growing";
-
 declare var GrowingPacker;
-
 import * as SVG from "svg.js";
 
 @autoinject
 export class Sprites {
     private claseBase = "sprite";
-    private nombreArchivo: string;
     private prefijo = "sprite-";
     private archivos: FileList;
+
+    private nombreArchivo: string;
     private cssGenerado: string;
     private ejemplo = "";
     private ejemploVertical = "";
-    private taskqeue: TaskQueue;
-    private packer;
+
     private imagenes: any[];
-    constructor(taskqeue: TaskQueue) {
+    private packer;
+    private taskqeue: TaskQueue;
+    private validationController: ValidationController;
+    constructor(taskqeue: TaskQueue,
+        validationController: ValidationController) {
         this.taskqeue = taskqeue;
+        this.validationController = validationController;
+        this.validationController.addRenderer(new BootstrapFormRenderer());
+        this.validationController.validateTrigger = validateTrigger.changeOrBlur;
+    }
+    attached(): void {
+        ValidationRules
+            .ensure((s: Sprites) => s.claseBase)
+            .required().withMessage(`Clase base requerida`)
+            .matches(/^[a-zA-Z_].*$/).withMessage(`Debe de empezar con alguna letra o guión bajo`)
+            .matches(/^(?!__).*$/).withMessage(`No puede empezar con dos guiones bajos`)
+            .matches(/^[a-zA-Z0-9_-]*$/).withMessage(`Sólo puede contener letras, numeros o guiones`)
+            .ensure((s: Sprites) => s.prefijo)
+            .required().withMessage(`Prefijo requerido`)
+            .matches(/^[a-zA-Z0-9_-]*$/).withMessage(`Sólo puede contener letras, numeros o guiones`)
+            .ensure((s: Sprites) => s.archivos)
+            .required().withMessage(`Selecciona imágenes`)
+            .on(this);
     }
     procesar(): void {
-        if (this.claseBase === null || this.claseBase.trim().length === 0) {
-            console.log("Clase base no definida");
-            return;
-        } else if (this.archivos === undefined || this.archivos.length <= 0) {
-            console.log("Imagenes requeridas");
-            return;
-        }
+        this.validationController.validate().then(result => {
+            if (result.valid) {
+                this.generar();
+            }
+        });
+    }
+    private generar(): void {
         this.nombreArchivo = this.claseBase;
         this.cargarImagenes(this.archivos).then(imagenes => {
             this.imagenes = imagenes;

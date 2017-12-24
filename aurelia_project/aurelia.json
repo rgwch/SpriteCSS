@@ -95,8 +95,13 @@
             "main": "aurelia-testing",
             "env": "dev"
           },
+          {
+            "name": "aurelia-validation",
+            "path": "../node_modules/aurelia-validation/dist/amd",
+            "main": "aurelia-validation"
+          },
           "text"
-        ]
+      ]
       }
     ],
     "copyFiles": {

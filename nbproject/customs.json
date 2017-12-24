@@ -10,6 +10,7 @@
         "click.delegate": {},
         "files.bind": {},
         "value.bind": {},
+        "repeat.for": {},
         "if.bind": {},
         "show.bind": {},
         "innerhtml.bind": {}
